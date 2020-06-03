@@ -4,7 +4,7 @@
     ],
   "protocol": "rest",
   "authConfig": {
-    "path": "//api?securityToken=6ab20fc9-335b-41d9-9756-7716f11edcf5&documentType=A44&in_Domain=10YFI-1--------U&out_Domain=10YFI-1--------U&periodStart=${startTime}&periodEnd=${endTime}",
+    "path": "//api?securityToken=6ab20fc9-335b-41d9-9756-7716f11edcf5&documentType=A44&in_Domain=10YFI-1--------U&out_Domain=10YFI-1--------U&timeInterval=${startTime}/${endTime}",
     "url": "https://transparency.entsoe.eu",
     "headers": {
     }
