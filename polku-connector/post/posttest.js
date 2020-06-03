@@ -11,7 +11,7 @@ body = {
   "productCode": "entsoe",
   "parameters": {
     "ids": [
-      {"startTime": "2020-06-03T10%3A00%3A00Z", "endTime": "2020-06-03T10%3A00%3A00Z"}
+      {"startTime": "202006032300", "endTime": "202006042300"}
     ]
   }
 }
