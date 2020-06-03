@@ -41,7 +41,7 @@ const promiseRejectWithError = function (code, msg, reference) {
  */
 
 const getDataByOptions = async (config, options, path) => {
-  console.log(config)
+  console.log('inside restjs getdata',config)
     if (!config.url && !path) {
         return promiseRejectWithError(500, 'No url or path found in authConfig.');
     } else {
@@ -121,6 +121,7 @@ const getData = async (config, pathArray) => {
         const item = await requestData(config, pathArray[p], p);
         if (item) items.push(item);
     }
+    console.log('inside restjs getdata items', items)
     return items;
 };
 
@@ -132,9 +133,9 @@ const getData = async (config, pathArray) => {
  */
 const parseResBody = function (response) {
   var jsonObj = parser.parse(response.body);
-  console.log(jsonObj.Publication_MarketDocument.TimeSeries.Period.Point[0])
+//   console.log('inside restjs parsebody', jsonObj.Publication_MarketDocument.TimeSeries.Period.Point[0])
     let body = {};
-    console.log(jsonObj)
+    console.log('inside restjs parsebody', jsonObj)
     return jsonObj.Publication_MarketDocument.TimeSeries.Period.Point;
 };
 
@@ -148,7 +149,7 @@ const parseResBody = function (response) {
  * @return {Promise}
  */
 const requestData = async (config, path, index) => {
-  console.log(config.authConfig.headers)
+  console.log('inside restjs reqdata',config)
     // Initialize request options.
     let method = 'GET';
     let options = {
