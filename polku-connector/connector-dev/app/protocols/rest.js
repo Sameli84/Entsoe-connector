@@ -121,7 +121,7 @@ const getData = async (config, pathArray) => {
         const item = await requestData(config, pathArray[p], p);
         if (item) items.push(item);
     }
-    console.log('inside restjs getdata items', items)
+    // console.log('inside restjs getdata items', items)
     return items;
 };
 
@@ -135,7 +135,7 @@ const parseResBody = function (response) {
   var jsonObj = parser.parse(response.body);
 //   console.log('inside restjs parsebody', jsonObj.Publication_MarketDocument.TimeSeries.Period.Point[0])
     let body = {};
-    console.log('inside restjs parsebody', jsonObj)
+    // console.log('inside restjs parsebody', jsonObj)
     return jsonObj.Publication_MarketDocument.TimeSeries.Period.Point;
 };
 
@@ -149,7 +149,7 @@ const parseResBody = function (response) {
  * @return {Promise}
  */
 const requestData = async (config, path, index) => {
-  console.log('inside restjs reqdata',config)
+  console.log('inside restjs reqdata config.parameters',config.parameters)
     // Initialize request options.
     let method = 'GET';
     let options = {
