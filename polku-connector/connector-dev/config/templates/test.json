@@ -1,0 +1,26 @@
+{
+  "plugins": [
+    "test"
+  ],
+  "protocol": "custom",
+  "authConfig": {
+    "path": "${id}"
+  },
+  "dataObjects": [
+    ""
+  ],
+  "dataPropertyMappings": {
+    "${type}": "value"
+  },
+  "generalConfig": {
+    "hardwareId": {
+      "dataObjectProperty": "name"
+    },
+    "sourceName": {
+      "dataObjectProperty": "name"
+    },
+    "timestamp": {
+      "dataObjectProperty": "timestamp"
+    }
+  }
+}

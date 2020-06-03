@@ -1,0 +1,30 @@
+{
+  "plugins": [
+
+    ],
+  "protocol": "rest",
+  "authConfig": {
+    "path": "/v1/variable/${id}/events/json?start_time=${startTime}&end_time=${endTime}",
+    "url": "https://api.fingrid.fi",
+    "headers": {
+      "x-api-key": "RYENoZutQn5wL19PvYNtt5rb9DVoaGBY8RPPfAdx"
+    }
+  },
+  "dataObjects": [
+    ""
+  ],
+  "dataPropertyMappings": { 
+    "${type}": "value"
+  },
+  "generalConfig": {
+    "hardwareId": {
+      "dataObjectProperty": "start_time"
+    },
+    "sourceName": {
+      "dataObjectProperty": "value"
+    },
+    "timestamp": {
+      "dataObjectProperty": "end_time"
+    }
+  }
+}

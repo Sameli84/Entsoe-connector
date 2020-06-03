@@ -1,0 +1,29 @@
+{
+  "plugins": [
+
+    ],
+  "protocol": "rest",
+  "authConfig": {
+    "path": "//api?securityToken=6ab20fc9-335b-41d9-9756-7716f11edcf5&documentType=A44&in_Domain=10YFI-1--------U&out_Domain=10YFI-1--------U&periodStart=202006022300&periodEnd=202006032300",
+    "url": "https://transparency.entsoe.eu",
+    "headers": {
+    }
+  },
+  "dataObjects": [
+    ""
+  ],
+  "dataPropertyMappings": { 
+    "${type}": "price.amount"
+  },
+  "generalConfig": {
+    "hardwareId": {
+      "dataObjectProperty": "position"
+    },
+    "sourceName": {
+      "dataObjectProperty": "position"
+    },
+    "timestamp": {
+      "dataObjectProperty": "start"
+    }
+  }
+}

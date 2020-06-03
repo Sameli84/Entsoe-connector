@@ -1,0 +1,19 @@
+{
+  "template": "fingrid",
+  "static": {
+    "type": "EnergyConsumption"
+  },
+  "dynamic": {
+    "authConfig.path": "ids",
+    "dataPropertyMappings": "type"
+  },
+  "request": {
+    "ids": [
+     { 
+      "id": "<id>",
+      "startTime": "<startTime>",
+      "endTime": "<endTime>" 
+     }
+    ]
+  }
+}
