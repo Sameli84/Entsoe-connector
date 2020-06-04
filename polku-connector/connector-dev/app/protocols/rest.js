@@ -5,8 +5,6 @@
 const winston = require('../../logger.js');
 const response = require('../lib/response');
 const rp = require('request-promise');
-var parser = require('fast-xml-parser');
-
 /**
  * REST library.
  *
@@ -131,12 +129,21 @@ const getData = async (config, pathArray) => {
  * @param {Object} response
  * @return {Object}
  */
-const parseResBody = function (response) {
-  var jsonObj = parser.parse(response.body);
-//   console.log('inside restjs parsebody', jsonObj.Publication_MarketDocument.TimeSeries.Period.Point[0])
-    let body = {};
-    // console.log('inside restjs parsebody', jsonObj)
-    return jsonObj.Publication_MarketDocument.TimeSeries.Period.Point;
+const parseResBody = (config, response) => {
+  // Execute dataManipulation plugin function.
+  for (let i = 0; i < config.plugins.length; i++) {
+    if (!!config.plugins[i].dataManipulation) {
+        return config.plugins[i].dataManipulation(response.body);
+    }
+  }
+  
+  try {
+    console.log(response.body)
+      body = JSON.parse(response.body);
+  } catch (err) {
+      winston.log('error', 'Failed to parse response body.');
+  }
+  return body;
 };
 
 /**
@@ -191,7 +198,7 @@ const requestData = async (config, path, index) => {
     /** First attempt */
     return getDataByOptions(config.authConfig, options, path).then(function (result) {
         // Handle received data.
-        if (result !== null) return response.handleData(config, path, index, parseResBody(result));
+        if (result !== null) return response.handleData(config, path, index, parseResBody(config, result));
         // Handle connection timed out.
         return promiseRejectWithError(522, 'Connection timed out.');
     }).then(function (result) {
