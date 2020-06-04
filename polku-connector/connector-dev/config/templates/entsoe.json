@@ -13,7 +13,7 @@
     ""
   ],
   "dataPropertyMappings": { 
-    "${type}": "price.amount"
+    "${type}": "priceamount"
   },
   "generalConfig": {
     "hardwareId": {
