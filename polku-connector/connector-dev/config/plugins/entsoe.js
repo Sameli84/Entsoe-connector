@@ -11,7 +11,7 @@ const dataManipulation = (body) => {
     let xml = body
     xml = xml.replace(/\.(?=[^<>]*>)/g, '')
     console.log('xml text', xml)
-    var jsonObj = parser.parse(body);
+    var jsonObj = parser.parse(xml);
     console.log('inside entsoe.js plugin dataManipulation', jsonObj.Publication_MarketDocument.TimeSeries.Period.Point)
     // console.log('inside restjs parsebody', jsonObj.Publication_MarketDocument.TimeSeries.Period.Point[0])
     // console.log('inside restjs parsebody', jsonObj.Publication_MarketDocument.TimeSeries)
