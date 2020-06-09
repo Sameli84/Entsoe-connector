@@ -39,7 +39,7 @@ const publicKeyURLs = [
 
 /** Context URLs. */
 const contextURLs = {
-    DataProduct: 'https://standards-ontotest.oftrust.net/v2/Schema/DataProductOutput/SensorDataProductOutput/'
+    DataProduct: 'https://standards-ontotest.oftrust.net/v2/Schema/DataProductOutput/Forecast/Price/Electricity'
 };
 
 /**

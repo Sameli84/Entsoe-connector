@@ -10,7 +10,7 @@
     ""
   ],
   "dataPropertyMappings": {
-    "${type}": "value"
+    "${type}": ""
   },
   "generalConfig": {
     "hardwareId": {

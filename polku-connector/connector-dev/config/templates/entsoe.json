@@ -13,17 +13,9 @@
     ""
   ],
   "dataPropertyMappings": { 
-    "${type}": "priceamount"
+    "position": "position",
+    "rate": "priceamount"
   },
   "generalConfig": {
-    "hardwareId": {
-      "dataObjectProperty": "position"
-    },
-    "sourceName": {
-      "dataObjectProperty": "position"
-    },
-    "timestamp": {
-      "dataObjectProperty": "start"
-    }
   }
 }

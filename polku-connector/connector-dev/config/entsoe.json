@@ -1,11 +1,9 @@
 {
   "template": "entsoe",
   "static": {
-    "type": "ElectricityPrice"
   },
   "dynamic": {
-    "authConfig.path": "ids",
-    "dataPropertyMappings": "type"
+    "authConfig.path": "ids"
   },
   "request": {
     "ids": [

@@ -4,7 +4,7 @@
   },
   "dynamic": {
     "authConfig.path": "ids",
-    "dataPropertyMappings": "type"
+    "dataPropertyMappings": "measurement"
   },
   "request": {
     "ids": [

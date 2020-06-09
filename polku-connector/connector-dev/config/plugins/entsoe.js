@@ -1,6 +1,5 @@
 "use strict";
 var parser = require('fast-xml-parser');
-var parseString = require('xml2js').parseString;
 
 /**
  *
@@ -18,10 +17,25 @@ const dataManipulation = (body) => {
     return jsonObj.Publication_MarketDocument.TimeSeries.Period.Point;
 };
 
+const data = (config, measurementData) => {
+  console.log(config.dataPropertyMappings.time)
+  return JSON.parse(`{
+          "ForecastElectricityPriceMWH": [
+            {
+              "@type": "PricePlan",
+              "currency": "EUR",
+              "period": "${measurementData.position}",
+              "rate": "${measurementData.rate}"
+            }
+          ]
+}`)
+}
+
 /**
  * Expose plugin methods.
  */
 module.exports = {
-    name: 'siemens-navigator',
-    dataManipulation
+    name: 'entsoe',
+    dataManipulation,
+    data
 };

@@ -4,8 +4,8 @@
  */
 const definitions = {
     TIMESTAMP: 'timestamp',
-    DATA: 'measurements',
-    VALUE: 'value',
+    DATA: 'forecasts',
+    VALUE: 'PricePlans',
     TYPE: '@type',
     ID: 'id',
 };
