@@ -1,17 +1,15 @@
 {
   "template": "entsoe",
   "static": {
+    "securityToken": "6ab20fc9-335b-41d9-9756-7716f11edcf5"
   },
   "dynamic": {
-    "authConfig.path": "ids"
+    "authConfig.path": ["targetObject","targetObject"],
+    "generalConfig.query.properties.0.timeInterval": [
+      "period"
+    ]
   },
   "request": {
-    "ids": [
-     { 
-      "id": "<id>",
-      "startTime": "<startTime>",
-      "endTime": "<endTime>" 
-     }
-    ]
+    "targetObject": "<10YCZ-CEPS-----N>"
   }
 }

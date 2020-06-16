@@ -8,6 +8,7 @@ const _ = require('lodash');
 
 /** Import response definitions. */
 const {
+    TIMESTAMP,
     VALUE,
     TYPE,
     DATA,
@@ -150,7 +151,6 @@ const handleData = async (config, path, index, data) => {
 
             // Execute data plugin function.
             for (let i = 0; i < config.plugins.length; i++) {
-              console.log(measurement.data)
                 if (!!config.plugins[i].data) {
                     measurement.data = await config.plugins[i].data(config, measurement.data);
                 }
@@ -172,10 +172,21 @@ const handleData = async (config, path, index, data) => {
             };
 
             // Format data
+            //SAMPSA: Laitoin tolleen 'kauniisti' sen period-kohdan tulosteeseen, mitä pyydettiin ontologiassa...
             for (let d = 0; d < Object.entries(measurement.data).length; d++ ) {
+              let periodStart = data.Publication_MarketDocument.periodtimeInterval.start
+              let periodEnd = data.Publication_MarketDocument.periodtimeInterval.end
+              periodStart = periodStart.split("T")[0]
+              periodStart = periodStart.replace(/-/g, ".")
+              periodStart = periodStart.split(".")[2] + "." + periodStart.split(".")[1] + "." + periodStart.split(".")[0] + "/"
+              periodEnd = periodEnd.split("T")[0]
+              periodEnd = periodEnd.replace(/-/g, ".")
+              periodEnd = periodEnd.split(".")[2] + "." + periodEnd.split(".")[1] + "." + periodEnd.split(".")[0]
                 item[DATA || 'data'].push({
                     [TYPE || 'type']: Object.entries(measurement.data)[d][0],
+                    "period" : periodStart + periodEnd,
                     [VALUE || 'value']: Object.entries(measurement.data)[d][1],
+                    //[TIMESTAMP || 'timestamp']: measurement.timestamp,
                 });
             }
             measurements.push(item);
@@ -200,12 +211,13 @@ const handleData = async (config, path, index, data) => {
         // Sort data arrays.
         for (let j = 0; j < mergedData.length; j++ ) {
             mergedData[j][DATA || 'data'] =
-                mergedData[j][DATA || 'data'];
+                mergedData[j][DATA || 'data']
+                    .sort((a, b) => a[TIMESTAMP || 'timestamp'] - b[TIMESTAMP || 'timestamp']);
 
             // Execute id plugin function.
             for (let i = 0; i < config.plugins.length; i++) {
                 if (!!config.plugins[i].id) {
-                    mergedData[j][ID || 'id'] = await config.plugins[i].id(config, mergedData[j][ID || 'id']);
+                    mergedData[j][ID || 'id'] = await config.plugins[i].id({...config, index}, mergedData[j][ID || 'id']);
                 }
             }
 

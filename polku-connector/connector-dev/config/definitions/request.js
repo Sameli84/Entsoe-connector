@@ -43,8 +43,9 @@ const supportedParameters = {
     [definitions.PARAMETERS]: {
         required: true
     },
+    //SAMPSA: laitoin ettei ids-parametria tartte laittaa brokerille postilla
     [definitions.IDS]: {
-        required: true
+        required: false
     },
     [definitions.START]: {
         required: false

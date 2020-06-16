@@ -5,6 +5,7 @@
 const winston = require('../../logger.js');
 const rest = require('../protocols/rest');
 const validator = require('./validator');
+const events = require('events');
 const cache = require('../cache');
 const moment = require('moment');
 const _ = require('lodash');
@@ -34,15 +35,40 @@ const plugins = {};
 
 // Set directories.
 const templatesDir = './config/templates';
+const resourcesDir = './config/resources';
 const protocolsDir = './app/protocols';
 const pluginsDir = './config/plugins';
 const configsDir = './config';
 
 // Make sure directories for templates, protocols, configs and plugins exists.
 if (!fs.existsSync(templatesDir)) fs.mkdirSync(templatesDir);
+if (!fs.existsSync(resourcesDir)) fs.mkdirSync(resourcesDir);
 if (!fs.existsSync(protocolsDir)) fs.mkdirSync(protocolsDir);
 if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir);
 if (!fs.existsSync(pluginsDir)) fs.mkdirSync(pluginsDir);
+
+/**
+ * Handles JSON data.
+ *
+ * @param {String} collection
+ * @param {Object} file
+ * @param {String} data
+ */
+function handleFile(collection, file, data) {
+    let object;
+    try {
+        object = JSON.parse(data);
+        // If config has protocol mqtt, connect to the broker.
+        if (Object.hasOwnProperty.call(object, 'static')) {
+            if (Object.hasOwnProperty.call(object.static, 'topic')) {
+                protocols['mqtt'].connect(object, file);
+            }
+        }
+    } catch (err) {
+        /** File is not a valid JSON. */
+    }
+    cache.setDoc(collection, file, object || data);
+}
 
 /**
  * Caches or requires file contents.
@@ -60,18 +86,15 @@ function readFile(dir, ext, collection, file) {
                 switch (ext) {
                     /** JSON. */
                     case '.json':
-                        const config = JSON.parse(data);
-                        cache.setDoc(collection, file.split('.')[0], config);
-                        // If config has protocol mqtt, connect to the broker.
-                        if (Object.hasOwnProperty.call(config, 'static')) {
-                            if (Object.hasOwnProperty.call(config.static, 'topic')) {
-                                protocols['mqtt'].connect(config, file.split('.')[0]);
-                            }
-                        }
+                        handleFile(collection, file.split('.')[0], data);
                         break;
                     /** JavaScript. */
                     case '.js':
                         eval(collection)[file.split('.')[0]] = require('../.' + dir + '/' + file);
+                        break;
+                    /** Resources. */
+                    case '.*':
+                        handleFile(collection, file, data);
                         break;
                 }
                 winston.log('info', 'Loaded ' + dir + '/' + file + '.');
@@ -92,26 +115,87 @@ function readFile(dir, ext, collection, file) {
  *   Extension of the files to be scanned.
  * @param {String} collection
  *   Collection name.
+ *  @param {Function} callback
+ *   Handler for single file.
  */
-function load(dir, ext, collection) {
+function load(dir, ext, collection, callback) {
     return new Promise(function (resolve, reject) {
         fs.readdir(dir, async (err, files) => {
             if (err) reject(err);
             for (let i = 0; i < files.length; i++) {
                 // Handle only files with given file extension.
-                if (files[i].substr(-ext.length) !== ext) continue;
-                await readFile(dir, ext, collection, files[i]);
+                if (files[i].substr(-ext.length) !== ext && ext !== '.*') continue;
+                await callback(dir, ext, collection, files[i]);
             }
             resolve();
         });
     });
 }
 
+// Emitter for loading status.
+const emitter = new events.EventEmitter();
+
+/**
+ * Loads JSON files from array.
+ *
+ * @param {String} collection
+ *   Type of the contents.
+ * @param {String} string
+ *   Content of the environment variable.
+ */
+function loadJSON(collection, string) {
+    try {
+        const object = JSON.parse(Buffer.from(string, 'base64').toString('utf8'));
+        for (let i = 0; i < Object.keys(object).length; i++) {
+            const filename = Object.keys(object)[i];
+            handleFile('configs', filename, JSON.stringify(object[filename]));
+            winston.log('info', 'Loaded from environment ' + collection + '/' + filename + '.');
+        }
+    } catch (err) {
+        winston.log('error', err.message);
+    }
+    return Promise.resolve();
+}
+
+/**
+ * Emits cached collections.
+ *
+ * @param {Array} collections
+ *   Collection names.
+ */
+function emit(collections) {
+    const data = {};
+    for (let i = 0; i < collections.length; i++) {
+        try {
+            data[collections[i]] = Object.assign({},
+                ...cache.getKeys(collections[i]).map(key => {
+                    return {[key]: cache.getDoc(collections[i], key)}
+                })
+            )
+        } catch (err) {
+            winston.log('error', err.message);
+        }
+    }
+    emitter.emit('collections', data);
+    return Promise.resolve();
+}
+
 // Load templates, protocols, configurations and plugins.
-load(templatesDir, '.json', 'templates')
-    .then(() => {return load(protocolsDir, '.js', 'protocols')})
-    .then(() => {return load(configsDir, '.json', 'configs')})
-    .then(() => {return load(pluginsDir, '.js', 'plugins')})
+(process.env.TEMPLATES ?
+    /** Source selection for templates. */
+    loadJSON('templates', process.env.TEMPLATES) :
+    load(templatesDir, '.json', 'templates', readFile))
+    .then(() => {return (process.env.RESOURCES ?
+        /** Source selection for resources. */
+        loadJSON('resources', process.env.RESOURCES) :
+        load(resourcesDir, '.*', 'resources', readFile))})
+    .then(() => {return load(protocolsDir, '.js', 'protocols', readFile)})
+    .then(() => {return (process.env.CONFIGS ?
+        /** Source selection for configs. */
+        loadJSON('configs', process.env.CONFIGS) :
+        load(configsDir, '.json', 'configs', readFile))})
+    .then(() => {return load(pluginsDir, '.js', 'plugins', readFile)})
+    .then(() => {return emit(['templates', 'configs', 'resources'])})
     .catch((err) => winston.log('error', err.message));
 
 /**
@@ -119,15 +203,16 @@ load(templatesDir, '.json', 'templates')
  *
  * @param {String/Object} template
  *   Template value.
- * @param {String/Object} placeholder
- *   Placeholder value.
- * @param {String} value
+ * @param {String} placeholder
+ *   Placeholder name. Used when value is not an object.
+ * @param {String/Object} value
  *   Inserted value.
  * @return {String/Object}
  *   Template value with placeholder values.
  */
 function replacer(template, placeholder, value) {
     let r = JSON.stringify(template);
+    if (value instanceof Date) value = value.toISOString();
     if (_.isObject(value)) {
         Object.keys(value).forEach(function (key) {
             r = r.replace('${' + key + '}', value[key])
@@ -171,20 +256,25 @@ function replacePlaceholders(config, template, params) {
     /** Dynamic parameters. */
     if (Object.hasOwnProperty.call(config, 'dynamic')) {
         Object.keys(config.dynamic).forEach(function (path) {
-            const placeholder = config.dynamic[path];
-            if (Object.hasOwnProperty.call(params, placeholder)) {
-                const templateValue = _.get(template, path);
-                if (Array.isArray(params[placeholder])) {
-                    // Transform placeholder to array, if given parameters are in an array.
-                    const array = [];
-                    params[placeholder].forEach(function (element) {
-                        array.push(replacer(templateValue, placeholder, element));
-                    });
-                    _.set(template, path, array);
-                } else {
-                    _.set(template, path, replacer(templateValue, placeholder, params[placeholder]));
-                }
+            let placeholders = config.dynamic[path];
+            if (!Array.isArray(placeholders)) {
+                placeholders = [placeholders];
             }
+            placeholders.forEach(function (placeholder) {
+                if (Object.hasOwnProperty.call(params, placeholder)) {
+                    const templateValue = _.get(template, path);
+                    if (Array.isArray(params[placeholder])) {
+                        // Transform placeholder to array, if given parameters are in an array.
+                        const array = [];
+                        params[placeholder].forEach(function (element) {
+                            array.push(replacer(templateValue, placeholder, element));
+                        });
+                        _.set(template, path, array);
+                    } else {
+                        _.set(template, path, replacer(templateValue, placeholder, params[placeholder]));
+                    }
+                }
+            });
         });
     }
 
@@ -247,22 +337,28 @@ const interpretMode = function (config, parameters) {
             parameters.start = start;
         }
         config.mode = 'history';
-        // Remove limit query property.
-        if (Object.hasOwnProperty.call(config, 'generalConfig')) {
-            if (Object.hasOwnProperty.call(config.generalConfig, 'query')) {
-                if (Object.hasOwnProperty.call(config.generalConfig.query, 'properties')) {
-                    delete config.generalConfig.query.properties.limit;
-                }
-            }
-        }
     } else {
         // Include default range.
-        parameters.start = new Date(moment.now() - defaultTimeRange);
+        parameters.start = new Date(config.timestamp.getTime() - defaultTimeRange);
     }
 
     // Detect prediction request from end time and client's current local time.
     if (parameters.end.getTime() > config.timestamp.getTime()) {
         config.mode = 'prediction';
+    }
+
+    if (config.mode === 'latest') {
+        // Add limit query property, if it's required.
+        if (Object.hasOwnProperty.call(config, 'generalConfig')) {
+            if (Object.hasOwnProperty.call(config.generalConfig, 'query')) {
+                if (!Object.hasOwnProperty.call(config.generalConfig.query, 'properties')) {
+                    config.generalConfig.query.properties = [];
+                }
+                if (Object.hasOwnProperty.call(config.generalConfig.query, 'limit')) {
+                    config.generalConfig.query.properties.push(config.generalConfig.query.limit);
+                }
+            }
+        }
     }
 
     // Save parameters to config.
@@ -391,5 +487,6 @@ const getData = async (reqBody) => {
  * Expose library functions.
  */
 module.exports = {
-    getData
+    getData,
+    emitter
 };

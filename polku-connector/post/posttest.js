@@ -6,13 +6,15 @@ const headers = {
   "Content-Type": "application/json"
 };
 
+//SAMPSA: Laitoin tänne ton periodin (josta en oikeestaan tajuu miten se toimii,
+//mutta jotenki templaatissa ja entsoen datassa olevan timeIntervalin kautta sen hakee), ja sit ton tilatun targetObjectin.
 body = {
+  "@context": "https://standards-ontotest.oftrust.net/v2/Context/DataProductParameters/Forecast/Price/Electricity/",
   "timestamp": "2020-05-25T13:02:13.142Z",
   "productCode": "entsoe",
   "parameters": {
-    "ids": [
-      {"startTime": "2020-06-10T16:00Z", "endTime": "2020-06-10T23:00Z"}
-    ]
+    "period": "2020-06-16T15:00Z/2020-06-16T21:00Z",
+    "targetObject": "10YCZ-CEPS-----N"
   }
 }
 

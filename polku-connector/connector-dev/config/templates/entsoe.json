@@ -1,21 +1,29 @@
 {
   "plugins": [
     "entsoe"
-    ],
+  ],
   "protocol": "rest",
   "authConfig": {
-    "path": "//api?securityToken=6ab20fc9-335b-41d9-9756-7716f11edcf5&documentType=A44&in_Domain=10YFI-1--------U&out_Domain=10YFI-1--------U&timeInterval=${startTime}/${endTime}",
     "url": "https://transparency.entsoe.eu",
-    "headers": {
-    }
+    "path": "//api?securityToken=${securityToken}&documentType=A44&in_Domain=${targetObject}&out_Domain=${targetObject}"
   },
   "dataObjects": [
     ""
   ],
-  "dataPropertyMappings": { 
-    "position": "position",
-    "rate": "priceamount"
+  "dataPropertyMappings": {
+    "ForecastElectricityPriceMWH": "Publication_MarketDocument"
   },
   "generalConfig": {
+    "query": {
+      "properties": [{"timeInterval": "${period}"}]
+    },
+    "hardwareId": {
+    },
+    "sourceName": {
+      "dataObjectProperty": ""
+    },
+    "timestamp": {
+      "dataObjectProperty": "Publication_MarketDocument.createdDateTime"
+    }
   }
 }

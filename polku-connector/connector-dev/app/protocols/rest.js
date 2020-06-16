@@ -5,6 +5,7 @@
 const winston = require('../../logger.js');
 const response = require('../lib/response');
 const rp = require('request-promise');
+
 /**
  * REST library.
  *
@@ -37,9 +38,7 @@ const promiseRejectWithError = function (code, msg, reference) {
  * @param {String} path
  * @return {Promise}
  */
-
 const getDataByOptions = async (config, options, path) => {
-  console.log('inside restjs getdata',config)
     if (!config.url && !path) {
         return promiseRejectWithError(500, 'No url or path found in authConfig.');
     } else {
@@ -119,7 +118,6 @@ const getData = async (config, pathArray) => {
         const item = await requestData(config, pathArray[p], p);
         if (item) items.push(item);
     }
-    // console.log('inside restjs getdata items', items)
     return items;
 };
 
@@ -129,21 +127,14 @@ const getData = async (config, pathArray) => {
  * @param {Object} response
  * @return {Object}
  */
-const parseResBody = (config, response) => {
-  // Execute dataManipulation plugin function.
-  for (let i = 0; i < config.plugins.length; i++) {
-    if (!!config.plugins[i].dataManipulation) {
-        return config.plugins[i].dataManipulation(response.body);
+const parseResBody = function (response) {
+    let body = {};
+    try {
+        body = JSON.parse(response.body);
+    } catch (err) {
+        return response;
     }
-  }
-  
-  try {
-    console.log(response.body)
-      body = JSON.parse(response.body);
-  } catch (err) {
-      winston.log('error', 'Failed to parse response body.');
-  }
-  return body;
+    return body;
 };
 
 /**
@@ -156,7 +147,6 @@ const parseResBody = (config, response) => {
  * @return {Promise}
  */
 const requestData = async (config, path, index) => {
-  console.log('inside restjs reqdata config.parameters',config.parameters)
     // Initialize request options.
     let method = 'GET';
     let options = {
@@ -198,7 +188,7 @@ const requestData = async (config, path, index) => {
     /** First attempt */
     return getDataByOptions(config.authConfig, options, path).then(function (result) {
         // Handle received data.
-        if (result !== null) return response.handleData(config, path, index, parseResBody(config, result));
+        if (result !== null) return response.handleData(config, path, index, parseResBody(result));
         // Handle connection timed out.
         return promiseRejectWithError(522, 'Connection timed out.');
     }).then(function (result) {
