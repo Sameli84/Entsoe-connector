@@ -42,6 +42,7 @@ module.exports.fetch = async (req, res) => {
             created: moment().format(),
             creator: req.protocol + '://' + req.get('host') + '/translator/v1/public.key',
         };
+        result.data = result.data[0]
 
         // Send signed data response.
         return res.status(200).send({

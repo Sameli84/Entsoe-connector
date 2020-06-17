@@ -173,9 +173,21 @@ const handleData = async (config, path, index, data) => {
 
             // Format data
             //SAMPSA: Laitoin tolleen 'kauniisti' sen period-kohdan tulosteeseen, mitä pyydettiin ontologiassa...
+            //SAMPSA: Ja nyt se kattoo sen myös oikein tulostuvan datan mukaan.
             for (let d = 0; d < Object.entries(measurement.data).length; d++ ) {
-              let periodStart = data.Publication_MarketDocument.periodtimeInterval.start
-              let periodEnd = data.Publication_MarketDocument.periodtimeInterval.end
+              let periodStart = config.parameters.period.split("/")[0]
+              let periodEnd = config.parameters.period.split("/")[1]
+
+              if(new Date(data.Publication_MarketDocument.periodtimeInterval.end) < new Date(periodEnd)) {
+                periodEnd = data.Publication_MarketDocument.periodtimeInterval.end
+              }
+
+              if(periodEnd.split("T")[1] === "00:00Z") {
+                let endDate = new Date(periodEnd)
+                endDate = new Date(endDate.setHours(endDate.getHours() - 1))
+                periodEnd = endDate.toISOString()
+              }
+              
               periodStart = periodStart.split("T")[0]
               periodStart = periodStart.replace(/-/g, ".")
               periodStart = periodStart.split(".")[2] + "." + periodStart.split(".")[1] + "." + periodStart.split(".")[0] + "/"
@@ -225,6 +237,13 @@ const handleData = async (config, path, index, data) => {
     } catch (err) {
         winston.log('error', 'Failed to merge data. ' + err.message);
     }
+
+
+    for (let i = 0; i < config.plugins.length; i++) {
+      if (!!config.plugins[i].response) {
+          mergedData = await config.plugins[i].finalize(config, mergedData);
+      }
+  }
 
     return Promise.resolve(mergedData);
 };

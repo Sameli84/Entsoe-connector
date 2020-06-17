@@ -13,7 +13,7 @@ body = {
   "timestamp": "2020-05-25T13:02:13.142Z",
   "productCode": "entsoe",
   "parameters": {
-    "period": "2020-06-16T15:00Z/2020-06-16T21:00Z",
+    "period": "2020-06-16T00:00Z/2021-01-01T01:00Z",
     "targetObject": "10YCZ-CEPS-----N"
   }
 }

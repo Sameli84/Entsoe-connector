@@ -16,9 +16,10 @@ let cache = {
     grants: {cache: new NodeCache()},
     configs: {cache: new NodeCache()},
     templates: {cache: new NodeCache()},
+    resources: {cache: new NodeCache()},
     publicKeys: {cache: new NodeCache()},
     dataProducts: {cache: new NodeCache()},
-    measurements: {cache: new NodeCache()}
+    measurements: {cache: new NodeCache()},
 };
 
 const getDoc = function (collection, id) {
@@ -35,6 +36,12 @@ const getDocs = function (collection) {
         }
         return array;
     } else return [];
+};
+
+const getKeys = function (collection) {
+    if (Object.hasOwnProperty.call(cache, collection)) {
+        return cache[collection].cache.keys();
+    } else return {};
 };
 
 const setDoc = function (collection, id, doc) {
@@ -54,6 +61,7 @@ const delDoc = function (collection, id) {
 module.exports = {
     getDoc,
     getDocs,
+    getKeys,
     setDoc,
     delDoc
 };
