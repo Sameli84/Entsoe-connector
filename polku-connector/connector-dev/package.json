@@ -31,7 +31,7 @@
     "helmet": "^3.21.3",
     "httpntlm": "^1.7.6",
     "hubspot": "^2.3.12",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "mqtt": "^4.0.1",
     "node-cache": "^5.1.0",
